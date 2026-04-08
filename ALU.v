@@ -41,7 +41,6 @@ module ALU(
 				alu_result = (operand1 != operand2) ? 32'b1 : 32'b0;
 			`ALU_LUI :
 				alu_result = operand2 << 16;
-			default:
 		endcase
 	end
 endmodule
