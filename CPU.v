@@ -63,6 +63,10 @@ module CPU(
 	assign halt				= (inst == 32'b0);
 
 	always @(*) begin
+		case (ALUOp)
+			
+
+		endcase
 	end
 
 
@@ -75,12 +79,65 @@ module CPU(
 	end
 	
 
-	CTRL ctrl ();
+	CTRL ctrl (
+		//input
+		.opcode = opcode;
+		.funct = funct;
+		//output
+		.RegDst = RegDst;
+		.Jump = Jump;
+		.Branch = Branch;
+		.JR = JR;
+		.MemRead = MemRead;
+		.MemtoReg = MemtoReg;
+		.MemWrite = MemWrite;
+		.ALUSrc = ALUSrc;
+		.SignExtend = SignExtend;
+		.RegWrite = RegWrite;
+		.ALUOp = ALUOp;
+		.SavePC = SavePC;
+	);
 
-	RF rf ();
+	RF rf (
+		//input
+		.clk = clk;
+		.rst = rst;
+		//read related
+		.rd_addr1 = rd_addr1;
+		.rd_addr2 = rd_addr2;
+		//write related
+		.RegWrite = RegWrite;
+		.wr_addr = wr_addr;
+		.wr_data = wr_data;
+		//output
+		.rd_data1 = rd_data1;
+		.rd_data2 = rd_data2;
+	);
 
-	MEM mem ();
+	MEM mem (
+		//instmem input
+		.clk = clk;
+		.rst = rst;
+		.inst_addr = PC;
+		//instmem output
+		.inst = inst;
+		
+		//datamem input
+		.mem_addr = mem_addr;
+		.MemWrite = MemWrite;
+		.mem_write_data = mem_write_data;
+		//datamem output
+		.mem_read_data = mem_read_data;
+	);
 	
-	ALU alu ();
+	ALU alu (
+		//input
+		.operand1 = operand1;
+		.operand2 = operand2;
+		.shamt = shamt;
+		.funct = funct;
+		//output
+		.alu_result = alu_result;
+	);
 	
 endmodule
