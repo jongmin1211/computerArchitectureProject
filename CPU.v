@@ -61,12 +61,43 @@ module CPU(
 	// Define the wires
 
 	assign halt				= (inst == 32'b0);
+	assign ext_imm 			= (SignExtend) ? {{16{immi[15]}}, immi} : {16'b0, immi};
+	assign opcode			= inst[31:26];
+	assign rs		= inst[25:21];
+	assign rt		= inst[20:16];
+	assign rd		= inst[15:11];
+	assign shamt	= inst[10:6];
+	assign funct	= inst[5:0];
+	assign immi		= inst[15:0];
+	assign immj		= inst[25:0];
+
+	//RF wire 연결
+	assign rd_addr1 = rs;
+	assign rd_addr2 = rd;
+
+	
+	//ALU wire 연결
+	assign operand1 = rd_data1;
+	assign operand2 = ALUSrc ? ext_imm : rd_data2;
+
+	//MEM wire 연결
+	assign mem_addr = alu_result;
+	assign mem_write_data = rd_data2;
 
 	always @(*) begin
-		case (ALUOp)
-			
-
-		endcase
+		if (SavePC) begin
+			wr_addr = 5'd31;
+			wr_data = PC + 4;
+		end
+		else if (RegDst) begin
+			wr_addr = rd;
+			wr_data = alu_result;
+		end
+		else begin
+			wr_data = rt;
+			if (MemtoReg) wr_data = mem_read_data;
+			else wr_data = alu_result;
+		end
 	end
 
 
@@ -81,63 +112,62 @@ module CPU(
 
 	CTRL ctrl (
 		//input
-		.opcode = opcode;
-		.funct = funct;
+		.opcode(opcode),
+		.funct(funct),
 		//output
-		.RegDst = RegDst;
-		.Jump = Jump;
-		.Branch = Branch;
-		.JR = JR;
-		.MemRead = MemRead;
-		.MemtoReg = MemtoReg;
-		.MemWrite = MemWrite;
-		.ALUSrc = ALUSrc;
-		.SignExtend = SignExtend;
-		.RegWrite = RegWrite;
-		.ALUOp = ALUOp;
-		.SavePC = SavePC;
+		.RegDst(RegDst),
+		.Jump(Jump),
+		.Branch(Branch),
+		.JR(JR),
+		.MemRead(MemRead),
+		.MemtoReg(MemtoReg),
+		.MemWrite(MemWrite),
+		.ALUSrc(ALUSrc),
+		.SignExtend(SignExtend),
+		.RegWrite(RegWrite),
+		.ALUOp(ALUOp),
+		.SavePC(SavePC)
 	);
 
 	RF rf (
 		//input
-		.clk = clk;
-		.rst = rst;
+		.clk(clk),
+		.rst(rst),
 		//read related
-		.rd_addr1 = rd_addr1;
-		.rd_addr2 = rd_addr2;
+		.rd_addr1(rd_addr1),
+		.rd_addr2(rd_addr2),
 		//write related
-		.RegWrite = RegWrite;
-		.wr_addr = wr_addr;
-		.wr_data = wr_data;
+		.RegWrite(RegWrite),
+		.wr_addr(wr_addr),
+		.wr_data(wr_data),
 		//output
-		.rd_data1 = rd_data1;
-		.rd_data2 = rd_data2;
+		.rd_data1(rd_data1),
+		.rd_data2 (rd_data2)
 	);
 
 	MEM mem (
 		//instmem input
-		.clk = clk;
-		.rst = rst;
-		.inst_addr = PC;
+		.clk(clk),
+		.rst(rst),
+		.inst_addr(PC),
 		//instmem output
-		.inst = inst;
+		.inst(inst),
 		
 		//datamem input
-		.mem_addr = mem_addr;
-		.MemWrite = MemWrite;
-		.mem_write_data = mem_write_data;
+		.mem_addr(mem_addr),
+		.MemWrite(MemWrite),
+		.mem_write_data(mem_write_data),
 		//datamem output
-		.mem_read_data = mem_read_data;
+		.mem_read_data(mem_read_data)
 	);
 	
 	ALU alu (
 		//input
-		.operand1 = operand1;
-		.operand2 = operand2;
-		.shamt = shamt;
-		.funct = funct;
+		.operand1(operand1),
+		.operand2(operand2),
+		.shamt(shamt),
+		.funct(ALUOP),
 		//output
-		.alu_result = alu_result;
+		.alu_result(alu_result)	
 	);
-	
 endmodule

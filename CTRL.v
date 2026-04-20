@@ -29,9 +29,9 @@ module CTRL(
 		ALUOp = 4'b0000; SavePC = 0;
 	//R-Type instruction
 		case (opcode)
-			6'b000000: begin
+			`OP_RTYPE: begin
 				//JR
-				if (funct == FUNCT_JR) begin
+				if (funct == `FUNCT_JR) begin
 					JR = 1;
 				end
 				else begin
@@ -39,91 +39,69 @@ module CTRL(
 					RegWrite = 1;
 				end
 				case (funct)
-					FUNCT_ADDU: begin
-						ALUOp = ALU_ADDU;
-					end
-					FUNCT_AND: begin
-						ALUOp = ALU_AND;
-					end
-					FUNCT_NOR: begin
-						ALUOp = ALU_NOR;
-					end
-					FUNCT_OR: begin
-						ALUOp = ALU_OR;
-					end
-					FUNCT_SLT: begin
-						ALUOp =  ALU_SLT;
-					end
-					FUNCT_SLTU: begin
-						ALUOp = ALU_SLTU;
-					end
-					FUNCT_SUBU: begin
-						ALUOp = ALU_SUBU;
-					end
-					FUNCT_XOR: begin
-						ALUOp = ALU_XOR;
-					end
-					FUNCT_SLL: begin
-						ALUOp = ALU_SLL;
-					end
-					FUNCT_SRA: begin
-						ALUOp = ALU_SRA;
-					end
-					FUNCT_SRL: begin
-						ALUOp = ALU_SRL;
-					end
+					`FUNCT_ADDU: 	ALUOp = `ALU_ADDU;
+					`FUNCT_AND: 		ALUOp = `ALU_AND;
+					`FUNCT_NOR: 		ALUOp = `ALU_NOR;
+					`FUNCT_OR: 		ALUOp = `ALU_OR;
+					`FUNCT_SLT: 		ALUOp = `ALU_SLT;
+					`FUNCT_SLTU: 	ALUOp = `ALU_SLTU;
+					`FUNCT_SUBU: 	ALUOp = `ALU_SUBU;
+					`FUNCT_XOR: 		ALUOp = `ALU_XOR;
+					`FUNCT_SLL: 		ALUOp = `ALU_SLL;
+					`FUNCT_SRA: 		ALUOp = `ALU_SRA;
+					`FUNCT_SRL: 		ALUOp = `ALU_SRL;
 				endcase
 				end
-				endcase
+				
 		
 
 		
 	//I-Type instruction		
-			OP_ADDIU: begin
-				ALUSrc = 1; SignExtend = 1; RegWrite = 1; ALUOp = ALU_ADDU;
+			`OP_ADDIU: begin
+				ALUSrc = 1; SignExtend = 1; RegWrite = 1; ALUOp = `ALU_ADDU;
 			end
-			OP_ANDI: begin
-				ALUSrc = 1; RegWrite = 1;  ALUOp = ALU_AND;
+			`OP_ANDI: begin
+				ALUSrc = 1; RegWrite = 1;  ALUOp = `ALU_AND;
 			end
-			OP_ORI: begin
-				ALUSrc = 1; RegWrite = 1; ALUOp = ALU_OR;
+			`OP_ORI: begin
+				ALUSrc = 1; RegWrite = 1; ALUOp = `ALU_OR;
 			end
-			OP_XORI: begin
-				ALUSrc = 1; RegWrite = 1; ALUOp = ALU_XOR;
+			`OP_XORI: begin
+				ALUSrc = 1; RegWrite = 1; ALUOp = `ALU_XOR;
 			end
-			OP_LUI: begin
-				ALUSrc = 1; ALUOp = ALU_LUI;
+			`OP_LUI: begin
+				RegWrite = 1; ALUSrc = 1; ALUOp = `ALU_LUI;
 			end
 			
-			OP_SLTI: begin
-				ALUSrc = 1; ALUOp = ALU_SLT;
+			`OP_SLTI: begin
+				ALUSrc = 1; ALUOp = `ALU_SLT;
 			end
-			OP_SLTIU: begin
-				ALUSrc = 1; ALUOp = ALU_SLTU;
+			`OP_SLTIU: begin
+				ALUSrc = 1; ALUOp = `ALU_SLTU;
 			end
-			OP_LW: begin
-				MemtoReg = 1; ALUSrc = 1; ALUOp = ALU_ADD;
+			`OP_LW: begin
+				RegWrite = 1; MemtoReg = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
 			end
-			OP_SW: begin
-				MemWrite = 1; ALUSrc = 1; ALUOp = ALU_ADD;
+			`OP_SW: begin
+				MemWrite = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
 			end
-			OP_BEQ: begin
-				Branch = 1; ALUOp = ALU_SUBU;
+			`OP_BEQ: begin
+				Branch = 1; ALUOp = `ALU_SUBU;
 			end
-			OP_BNE: begin
-				Branch = 1; ALUOp = ALU_SUBU;
+			`OP_BNE: begin
+				Branch = 1; ALUOp = `ALU_SUBU;
 			end
 
 		//J-Type instruction
-			OP_J: begin
+			`OP_J: begin
 				Jump = 1;
 			end
-			OP_JAL: begin
+			`OP_JAL: begin
 				Jump = 1; RegWrite = 1; SavePC = 1;
 			end
 			default: begin
 				
 			end
-
+		endcase
 	end
 endmodule
