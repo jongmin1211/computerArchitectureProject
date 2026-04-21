@@ -166,7 +166,7 @@ module CPU(
 		.operand1(operand1),
 		.operand2(operand2),
 		.shamt(shamt),
-		.funct(ALUOP),
+		.funct(ALUOp),
 		//output
 		.alu_result(alu_result)	
 	);
