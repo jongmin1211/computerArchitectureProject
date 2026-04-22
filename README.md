@@ -1,2 +1,2 @@
 computer architecture homework3
-CPU implimentation
+single cycle CPU implimentation

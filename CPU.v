@@ -54,9 +54,12 @@ module CPU(
 	wire [31:0]		operand2;
 	wire [31:0]		alu_result;
 
+
 	// Define PC
 	reg [31:0]	PC;
 	reg [31:0]	PC_next;
+	wire [31:0]  PC_plus4 = PC + 32'd4;
+
 
 	// Define the wires
 
@@ -73,7 +76,7 @@ module CPU(
 
 	//RF wire 연결
 	assign rd_addr1 = rs;
-	assign rd_addr2 = rd;
+	assign rd_addr2 = rt;
 
 	
 	//ALU wire 연결
@@ -85,19 +88,11 @@ module CPU(
 	assign mem_write_data = rd_data2;
 
 	always @(*) begin
-		if (SavePC) begin
-			wr_addr = 5'd31;
-			wr_data = PC + 4;
-		end
-		else if (RegDst) begin
-			wr_addr = rd;
-			wr_data = alu_result;
-		end
-		else begin
-			wr_data = rt;
-			if (MemtoReg) wr_data = mem_read_data;
-			else wr_data = alu_result;
-		end
+		wr_addr = SavePC ? 5'd31 : (RegDst ? rd : rt);
+		wr_data = SavePC ? PC_plus4 : (MemtoReg ? mem_read_data : alu_result);
+
+		PC_next = JR ? rd_data1 : Jump ?  {PC_plus4[31:28], immj, 2'b00} : 
+                 (Branch && alu_result) ?  (PC_plus4 + (ext_imm << 2)) : PC_plus4;
 	end
 
 
@@ -168,6 +163,6 @@ module CPU(
 		.shamt(shamt),
 		.funct(ALUOp),
 		//output
-		.alu_result(alu_result)	
+		.alu_result(alu_result)
 	);
 endmodule

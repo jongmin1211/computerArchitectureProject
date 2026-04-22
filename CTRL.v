@@ -26,7 +26,7 @@ module CTRL(
 		//ininitailize to 0
 		RegDst = 0; Jump = 0; Branch = 0; MemRead = 0; MemtoReg = 0;
 		MemWrite = 0; ALUSrc = 0; SignExtend = 0; RegWrite = 0;
-		ALUOp = 4'b0000; SavePC = 0;
+		ALUOp = 4'b0000; SavePC = 0; JR = 0;
 	//R-Type instruction
 		case (opcode)
 			`OP_RTYPE: begin
@@ -74,22 +74,22 @@ module CTRL(
 			end
 			
 			`OP_SLTI: begin
-				ALUSrc = 1; ALUOp = `ALU_SLT;
+				SignExtend = 1; RegWrite = 1 ; ALUSrc = 1; ALUOp = `ALU_SLT;
 			end
 			`OP_SLTIU: begin
-				ALUSrc = 1; ALUOp = `ALU_SLTU;
+				SignExtend = 1; RegWrite = 1; ALUSrc = 1; ALUOp = `ALU_SLTU;
 			end
 			`OP_LW: begin
-				RegWrite = 1; MemtoReg = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
+				SignExtend = 1; MemRead = 1; RegWrite = 1; MemtoReg = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
 			end
 			`OP_SW: begin
-				MemWrite = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
+				SignExtend = 1; MemWrite = 1; ALUSrc = 1; ALUOp = `ALU_ADDU;
 			end
 			`OP_BEQ: begin
-				Branch = 1; ALUOp = `ALU_SUBU;
+				SignExtend = 1; Branch = 1; ALUOp = `ALU_EQ;
 			end
 			`OP_BNE: begin
-				Branch = 1; ALUOp = `ALU_SUBU;
+				SignExtend = 1; Branch = 1; ALUOp = `ALU_NEQ;
 			end
 
 		//J-Type instruction

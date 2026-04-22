@@ -32,13 +32,13 @@ module ALU(
 			`ALU_XOR :
 				alu_result = operand1 ^ operand2;
 			`ALU_SLT :
-				alu_result = ($signed(operand1) < $signed(operand2)) ? 32'b1 : 32'b0;
+				alu_result = $signed(operand1) < $signed(operand2);
 			`ALU_SLTU:
-				alu_result = (operand1 < operand2) ? 32'b1 : 32'b0;
+				alu_result = operand1 < operand2;
 			`ALU_EQ  :
-				alu_result = (operand1 == operand2) ? 32'b1 : 32'b0;
+				alu_result = operand1 == operand2;
 			`ALU_NEQ :
-				alu_result = (operand1 != operand2) ? 32'b1 : 32'b0;
+				alu_result = operand1 != operand2;
 			`ALU_LUI :
 				alu_result = operand2 << 16;
 		endcase
