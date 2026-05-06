@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase1"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase2"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase3"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase4"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase5"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase6"
+		},
+		{
+			"path": "../../../Downloads/testcase/testcase7"
+		}
+	],
+	"settings": {}
+}
