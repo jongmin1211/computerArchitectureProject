@@ -118,11 +118,6 @@ module CPU(
 
 
 	always @(*) begin
-		// wr_addr = SavePC ? 5'd31 : (RegDst ? rd : rt);
-		// wr_data = SavePC ? PC_plus4 : (MemtoReg ? mem_read_data : alu_result);
-
-		// PC_next = JR ? A : Jump ?  {PC_plus4[31:28], immj, 2'b00} : 
-        //          (Branch && alu_result) ?  (PC_plus4 + (ext_imm << 2)) : PC_plus4;
 		if (PCSource == 2'b00)
 			PC_next = alu_result;
 		else if (PCSource == 2'b01)
@@ -131,12 +126,10 @@ module CPU(
 			PC_next = {PC[31:28], immj, 2'b00};
 		else if (PCSource == 2'b11)
 			PC_next = AWire;
-
 	end
 
 	// Update the Clock
 	always @(posedge clk) begin
-
 		if (rst)	PC <= 0;
 		else begin
 			if(PCWrite || (PCWriteCond && zero)) 
@@ -150,8 +143,6 @@ module CPU(
 			B <= rd_data2;
 		end
 	end
-	always @(posedge clk) begin
-end
 
 	CTRL ctrl (
 		//input
