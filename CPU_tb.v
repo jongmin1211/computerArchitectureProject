@@ -16,6 +16,11 @@ module CPU_tb;
 
     CPU cpu (.clk(clk), .rst(rst), .halt(halt));
 
+	initial begin
+    $dumpfile("cpu.vcd");
+    $dumpvars(0, CPU_tb);
+end
+
 	initial begin : REF_INIT
 		$readmemh("reference_mem.mem", memory);
 		$readmemh("reference_reg.mem", register_file);

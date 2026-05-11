@@ -40,3 +40,9 @@
 `define		OP_LUI				6'd15
 `define		OP_LW				6'd35
 `define		OP_SW				6'd43
+
+`define     IF                  3'b000
+`define     ID                  3'b001
+`define     EX                  3'b010
+`define     MEM                 3'b011
+`define     WB                  3'b100

@@ -7,7 +7,8 @@ module ALU(
 		input [31:0]		operand2,
 		input [4:0]			shamt,
 		input [3:0]			funct,
-		output reg [31:0]	alu_result
+		output reg [31:0]	alu_result,
+		output reg 			zero		
 	);
 	
 	// FIXME
@@ -36,9 +37,9 @@ module ALU(
 			`ALU_SLTU:
 				alu_result = operand1 < operand2;
 			`ALU_EQ  :
-				alu_result = operand1 == operand2;
+				zero = operand1 == operand2;
 			`ALU_NEQ :
-				alu_result = operand1 != operand2;
+				zero = operand1 != operand2;
 			`ALU_LUI :
 				alu_result = operand2 << 16;
 		endcase
