@@ -23,7 +23,7 @@ module CPU(
 	// Control-related wires
 	wire [1:0]		PCSource;
 	wire [3:0]		ALUOp;
-	wire [1:0]		ALUSrcB;
+	wire [2:0]		ALUSrcB;
 	wire 			ALUSrcA;
 	wire      		RegWrite;
 	wire [1:0]		RegDst;
@@ -113,7 +113,8 @@ module CPU(
 	assign operand2 = (ALUSrcB == 2'b00) ? B :
 					  (ALUSrcB == 2'b01) ? 4 :
 					  (ALUSrcB == 2'b10) ? ext_imm:
-					  (ext_imm << 2);
+					  (ALUSrcB == 2'b11) ? (ext_imm << 2) :
+					  0;
 
 
 	always @(*) begin

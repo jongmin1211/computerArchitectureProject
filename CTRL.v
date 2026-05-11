@@ -11,7 +11,7 @@ module CTRL(
 	// output various ports
 	output reg [1:0]	PCSource,
 	output reg [3:0] 	ALUOp,
-	output reg [1:0] 	ALUSrcB,
+	output reg [2:0] 	ALUSrcB,
 	output reg 			ALUSrcA,
 	output reg 			RegWrite,
 	output reg [1:0]	RegDst,
@@ -121,7 +121,7 @@ module CTRL(
 					`OP_JAL: begin
 						state_next = `WB;
 						PCWrite = 1; PCSource = 2'b10; 
-						ALUSrcA = 0; ALUSrcB = 2'b01; ALUOp = `ALU_ADDU;
+						ALUSrcA = 0; ALUSrcB = 3'b100; ALUOp = `ALU_ADDU;
 					end
 					default: begin
 						
