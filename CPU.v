@@ -173,8 +173,7 @@ end
 		.MemWrite(MemWrite),
 		.MemtoReg(MemtoReg),
 		.IRWrite(IRWrite),
-		.SignExtend(SignExtend),
-		.InstDone(InstDone)
+		.SignExtend(SignExtend)
 	);
 
 	RF rf (

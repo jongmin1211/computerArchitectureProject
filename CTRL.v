@@ -16,7 +16,6 @@ module CTRL(
 	output reg 			RegWrite,
 	output reg [1:0]	RegDst,
 
-
 	output reg PCWriteCond,
 	output reg PCWrite,
 	output reg IorD,
@@ -25,19 +24,17 @@ module CTRL(
 	output reg MemtoReg,
 	output reg IRWrite,
 
-	output reg SignExtend,
-
-	//for multicycle
-	output reg 			InstDone
+	output reg SignExtend
     );
-
 
 	reg [2:0] state;
 	reg [2:0] state_next;
+	reg InstDone;
 
 	//clk마다 state 바꾸기
 	always @(posedge clk) begin
 		if (rst) state <= `IF;
+		else if (InstDone) state <= `IF;
 		else state <= state_next;
 	end
 
@@ -115,7 +112,7 @@ module CTRL(
 
 			//J-Type instruction
 					`OP_J: begin
-						state_next = `IF;
+						InstDone = 1;
 						PCWrite = 1; PCSource = 2'b10;
 					end
 					`OP_JAL: begin
@@ -136,7 +133,7 @@ module CTRL(
 					`OP_RTYPE: begin
 						//JR
 						if (funct == `FUNCT_JR) begin
-							state_next = `IF;
+							InstDone = 1;
 							PCSource = 2'b11; PCWrite = 1; 
 						end
 						else begin 
@@ -197,12 +194,12 @@ module CTRL(
 						SignExtend = 1; ALUSrcA = 1; ALUSrcB = 2'b10; ALUOp = `ALU_ADDU;
 					end
 					`OP_BEQ: begin
-						state_next = `IF;
+						InstDone = 1;
 						ALUSrcA = 1; ALUSrcB = 2'b00; ALUOp = `ALU_EQ;
 						PCWriteCond = 1; PCSource = 2'b01;
 					end
 					`OP_BNE: begin
-						state_next = `IF;
+						InstDone = 1;
 						ALUSrcA = 1; ALUSrcB = 2'b00; ALUOp = `ALU_NEQ;
 						PCWriteCond = 1; PCSource = 2'b01;
 					end
@@ -218,7 +215,7 @@ module CTRL(
 						IorD = 1; MemRead = 1;
 					end
 					`OP_SW: begin
-						state_next = `IF;
+						InstDone = 1;
 						IorD = 1; MemWrite = 1;
 					end
 				endcase
@@ -229,7 +226,7 @@ module CTRL(
 				//R-Type instruction except JR
 				case (opcode)
 					`OP_RTYPE: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegDst = 2'b01;
 						MemtoReg = 0;
 						RegWrite = 1;
@@ -237,41 +234,41 @@ module CTRL(
 						
 			//I-Type instruction		
 					`OP_ADDIU: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_ANDI: begin
-						state_next = `IF;
+						InstDone = 1;InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_ORI: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_XORI: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_LUI: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					
 					`OP_SLTI: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_SLTIU: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 0;
 					end
 					`OP_LW: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; MemtoReg = 1; RegDst = 2'b00;
 					end
 			//J-Type instruction
 					`OP_JAL: begin
-						state_next = `IF;
+						InstDone = 1;
 						RegWrite = 1; RegDst = 2'b10; MemtoReg = 0;
 					end
 					default: begin
