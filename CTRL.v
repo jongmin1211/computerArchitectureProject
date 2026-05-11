@@ -264,7 +264,7 @@ module CTRL(
 					end
 					`OP_LW: begin
 						InstDone = 1;
-						RegWrite = 1; MemtoReg = 1; RegDst = 2'b00;
+						RegWrite = 1; MemtoReg = 1;
 					end
 			//J-Type instruction
 					`OP_JAL: begin
