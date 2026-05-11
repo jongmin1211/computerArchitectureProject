@@ -136,7 +136,7 @@ module CPU(
 
 	// Update the Clock
 	always @(posedge clk) begin
-    $display("PC=%h IR=%h", PC, IR);
+
 		if (rst)	PC <= 0;
 		else begin
 			if(PCWrite || (PCWriteCond && zero)) 
