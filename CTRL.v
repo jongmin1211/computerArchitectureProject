@@ -8,24 +8,26 @@ module CTRL(
 	input [5:0] opcode,
 	input [5:0] funct,
 
-	// output various ports
-	output reg [1:0]	PCSource,
-	output reg [3:0] 	ALUOp,
-	output reg [2:0] 	ALUSrcB,
-	output reg 			ALUSrcA,
-	output reg 			RegWrite,
-	output reg [1:0]	RegDst,
 
-	output reg PCWriteCond,
-	output reg PCWrite,
-	output reg IorD,
-	output reg MemRead,
-	output reg MemWrite,
-	output reg MemtoReg,
-	output reg IRWrite,
+	output reg WB,
+	output reg M,
+	output reg EX,
 
 	output reg SignExtend
     );
+
+	// output various ports
+	output reg 			PCSource,
+	output reg [3:0] 	ALUOp,
+	output reg 			ALUSrc,
+	output reg 			RegWrite,
+	output reg 			RegDst,
+
+	output reg MemRead,
+	output reg MemWrite,
+	output reg MemtoReg,
+
+	output reg branch,
 
 	reg [2:0] state;
 	reg [2:0] state_next;
@@ -40,20 +42,16 @@ module CTRL(
 
 	always @(*) begin
 		//ininitailize to 0
-		PCSource = 2'b00; ALUOp = 4'b0000; ALUSrcB = 2'b00;
-		ALUSrcA = 0; RegWrite = 0; RegDst = 0;
-		PCWriteCond = 0; PCWrite = 0; IorD = 0;
+		PCSource = 0; ALUOp = 4'b0000; ALUSrc = 0;
+		RegWrite = 0; RegDst = 0;
 		MemRead = 0; MemWrite = 0; MemtoReg = 0;
-		IRWrite = 0; SignExtend = 1; InstDone = 0;
+		SignExtend = 1; InstDone = 0;
 		state_next = state;
 
 		case (state)
 		//Instruction Fetch
 			`IF: begin
-				state_next = `ID;
-				IorD = 0; MemRead = 1; IRWrite = 1;
-				ALUSrcA = 0; ALUSrcB = 2'b01; ALUOp = `ALU_ADDU;
-        		PCSource = 2'b00; PCWrite = 1;    
+				state_next = `ID; 
 			end
 		
 		//Instruction Decode
@@ -103,11 +101,9 @@ module CTRL(
 					end
 					`OP_BEQ: begin
 						state_next = `EX;
-						ALUSrcA = 0; ALUSrcB = 2'b11; ALUOp = `ALU_ADDU;
 					end
 					`OP_BNE: begin
 						state_next = `EX;
-						ALUSrcA = 0; ALUSrcB = 2'b11; ALUOp = `ALU_ADDU;
 					end
 
 			//J-Type instruction
