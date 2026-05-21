@@ -7,19 +7,22 @@ module CPU(
 	output 		halt
 	);
 	
+	//hazard
+	wire  				stallTime;
 	//define latchs for control
-	reg 			IDtoEX_WBreg;
-	reg 			IDtoEX_MEMreg;
-	reg 			IDtoEX_EXreg;
-	reg 			EXtoMEM_WBreg;
-	reg 			EXtoMEM_MEMreg;
-	reg 			MEMtoWB_WBreg;
-	wire 			IDtoEX_WBwire;
-	wire 			IDtoEX_MEMwire;
-	wire 			IDtoEX_EXwire;
-	wire 			EXtoMEM_WBwire;
-	wire 			EXtoMEM_MEMwire;
-	wire 			MEMtoWB_WBwire;
+	reg [1:0]			IDtoEX_WBreg;
+	reg [2:0]			IDtoEX_MEMreg;
+	reg [5:0]			IDtoEX_EXreg;
+	reg [1:0]			EXtoMEM_WBreg;
+	reg [2:0]			EXtoMEM_MEMreg;
+	reg [1:0]			MEMtoWB_WBreg;
+	wire [1:0]			IDtoEX_WBwire;
+	wire [2:0]			IDtoEX_MEMwire;
+	wire [5:0]			IDtoEX_EXwire;
+	wire [1:0]			EXtoMEM_WBwire;
+	wire [2:0]			EXtoMEM_MEMwire;
+	wire [1:0]			MEMtoWB_WBwire;
+
 
 	//for IR
 	reg [31:0]		IR;
@@ -33,6 +36,7 @@ module CPU(
 	wire [4:0] 		IDtoEX_rdWire;
 	wire [4:0] 		EXtoMEM_destinationWire;
 	wire [4:0] 		MEMtoWB_destinationWire;
+	wire [4:0]		IDtoEX_destinationWire;
 
 	//for save signExtend
 	reg [31:0] 		IDtoEX_ext;
@@ -86,21 +90,21 @@ module CPU(
 	wire [25:0]		immj;
 
 	// Control-related wires
-	wire [1:0]		PCSrc;
+	wire 			PCSrc;
 	wire [3:0]		ALUOp;
-	wire [2:0]		ALUSrcB;
-	wire 			ALUSrcA;
+	wire 			ALUSrc;
 	wire      		RegWrite;
-	wire [1:0]		RegDst;
-	wire			PCWriteCond;
-	wire 			PCWrite;
-	wire            IorD;
+	wire  			RegDst;
 	wire 			MemRead;
 	wire 			MemWrite;
 	wire 			MemtoReg;
-	wire 			IRWrite;
-	wire 			IRwireDone;
+	wire 			branch;
+
 	wire 			SignExtend;
+
+	wire 			WB;
+	wire 			MEM;
+	wire  			EX;
 
 	// Sign extend the immediate
 	wire [31:0]		ext_imm;
@@ -163,15 +167,43 @@ module CPU(
 	assign operand2 = ALUSrc ? IDtoEX_extWire : IDtoEX_rd_data2Wire;
 
 
-	always @(*) begin
-		if (PCSrc) PC = EXtoMEM_ADDresultWire;
-		else 	   PC = PC_plus4;
-	end
+	assign 	PCSrc 	= Branch & EXtoMEM_zeroWire;
+	assign	{ALUOp, ALUSrc, RegDst} 	= IDtoEX_EXwire;
+	assign	{Branch, MemRead, MemWrite} = EXtoMEM_MEMwire;
+	assign	{RegWrite, MemtoReg} 		= MEMtoWB_WBwire;
 
-	// Update the Clock
+	assign IDtoEX_destinationWire = RegDst ? IDtoEX_rdWire : IDtoEX_rtWire;
+
+	// Update the Clock, PC
 	always @(posedge clk) begin
 		if (rst)	PC <= 0;
+
+		//flush younger instructions
+		else if (PCSrc) begin
+			PC <= EXtoMEM_ADDresult;
+			IR <= 0;
+			IDtoEX_EXreg <= 6'b000000;
+			IDtoEX_MEMreg <= 3'b000;
+			IDtoEX_WBreg <= 2'b00;
+		end
+
+		else if (stallTime) begin
+			EXtoMEM_WBreg <= IDtoEX_WBwire;
+			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
+			EXtoMEM_ADDresult <= addResultWire;
+			EXtoMEM_zero <= zero;
+			EXtoMEM_ALUresult <= alu_result;
+			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+
+			MEMtoWB_WBreg <= EXtoMEM_WBwire;
+			MEMtoWB_memorydata <= mem_read_data;
+			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
+			MEMtoWB_destination <= EXtoMEM_destinationWire;
+		end
+
 		else begin
+			PC <= PC_plus4;
+
 			if (RegDst) EXtoMEM_destination <= IDtoEX_rdWire;
 			else 		EXtoMEM_destination <= IDtoEX_rtWire;
 
@@ -179,9 +211,9 @@ module CPU(
 			IFtoID_nextPC <= PC_plus4;
 
 
-			IDtoEX_WBreg <= 
-			IDtoEX_MEMreg <=
-			IDtoEX_EXreg <= 
+			IDtoEX_WBreg <= WB;
+			IDtoEX_MEMreg <= MEM;
+			IDtoEX_EXreg <= EX;
 			IDtoEX_ext <= ext_imm;
 			IDtoEX_nextPC <= IFtoID_nextPCwire;
 			IDtoEX_rd_data1 <= rd_data1;
@@ -213,20 +245,11 @@ module CPU(
 		.clk(clk),
 		.opcode(opcode),
 		.funct(funct),
-		//output
 		.PCSrc(PCSrc),
-		.ALUOp(ALUOp),
-		.ALUSrcB(ALUSrcB),
-		.ALUSrcA(ALUSrcA),
-		.RegWrite(RegWrite),
-		.RegDst(RegDst),
-		.PCWriteCond(PCWriteCond),
-		.PCWrite(PCWrite),
-		.IorD(IorD),
-		.MemRead(MemRead),
-		.MemWrite(MemWrite),
-		.MemtoReg(MemtoReg),
-		.IRWrite(IRWrite),
+		//output
+		.WB(WB),
+		.MEM(MEM),
+		.EX(EX),
 		.SignExtend(SignExtend)
 	);
 
@@ -270,4 +293,20 @@ module CPU(
 		.alu_result(alu_result),
 		.zero(zero)
 	);
+
+	HAZARD hazard (
+		//input
+		.clk(clk),
+		.rst(rst),
+		.rd_addr1(rd_addr1),
+		.rd_addr2(rd_addr2),
+		.IDtoEX_destinationWire(IDtoEX_destinationWire),
+		.IDtoEX_WBwire(IDtoEX_WBWire),
+		.EXtoMEM_destinationWire(EXtoMEM_destinationWire),
+		.EXtoMEM_WBwire(EXtoMEM_WBwire),
+		.MEMtoWB_destinationWire(MEMtoWB_destinationWIre),
+		.MEMtoWB_WBwire(MEMtoWB_WBwire),
+		//output
+		.stallTime(stallTime)
+	)
 endmodule
