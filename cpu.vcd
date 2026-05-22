@@ -1,0 +1,183 @@
+$date
+	Fri May 22 13:49:06 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module CPU_tb $end
+$var wire 1 ! halt $end
+$var reg 1 " clk $end
+$var reg 1 # rst $end
+$var integer 32 $ FAILED [31:0] $end
+$var integer 32 % i [31:0] $end
+$scope module cpu $end
+$var wire 32 & EXtoMEM_ADDresultWire [31:0] $end
+$var wire 32 ' EXtoMEM_ALUresultWire [31:0] $end
+$var wire 3 ( EXtoMEM_MEMwire [2:0] $end
+$var wire 2 ) EXtoMEM_WBwire [1:0] $end
+$var wire 5 * EXtoMEM_destinationWire [4:0] $end
+$var wire 32 + EXtoMEM_nextPCwire [31:0] $end
+$var wire 1 , EXtoMEM_zeroWire $end
+$var wire 6 - IDtoEX_EXwire [5:0] $end
+$var wire 3 . IDtoEX_MEMwire [2:0] $end
+$var wire 2 / IDtoEX_WBwire [1:0] $end
+$var wire 32 0 IDtoEX_extWire [31:0] $end
+$var wire 32 1 IDtoEX_nextPCwire [31:0] $end
+$var wire 5 2 IDtoEX_rdWire [4:0] $end
+$var wire 32 3 IDtoEX_rd_data1Wire [31:0] $end
+$var wire 32 4 IDtoEX_rd_data2Wire [31:0] $end
+$var wire 5 5 IDtoEX_rtWire [4:0] $end
+$var wire 32 6 IFtoID_nextPCwire [31:0] $end
+$var wire 32 7 IRwire [31:0] $end
+$var wire 32 8 MEMtoWB_ALUresultWire [31:0] $end
+$var wire 2 9 MEMtoWB_WBwire [1:0] $end
+$var wire 5 : MEMtoWB_destinationWire [4:0] $end
+$var wire 32 ; MEMtoWB_memorydataWire [31:0] $end
+$var wire 1 < PCSrc $end
+$var wire 32 = addResultWire [31:0] $end
+$var wire 1 > branch $end
+$var wire 1 " clk $end
+$var wire 32 ? inst_addr [31:0] $end
+$var wire 32 @ mem_addr [31:0] $end
+$var wire 32 A mem_write_data [31:0] $end
+$var wire 32 B operand1 [31:0] $end
+$var wire 5 C rd_addr1 [4:0] $end
+$var wire 5 D rd_addr2 [4:0] $end
+$var wire 1 # rst $end
+$var wire 5 E wr_addr [4:0] $end
+$var wire 1 F zero $end
+$var wire 32 G wr_data [31:0] $end
+$var wire 1 H stallTime $end
+$var wire 5 I shamt [4:0] $end
+$var wire 5 J rt [4:0] $end
+$var wire 5 K rs [4:0] $end
+$var wire 32 L rd_data2 [31:0] $end
+$var wire 32 M rd_data1 [31:0] $end
+$var wire 5 N rd [4:0] $end
+$var wire 32 O operand2 [31:0] $end
+$var wire 6 P opcode [5:0] $end
+$var wire 32 Q mem_read_data [31:0] $end
+$var wire 32 R inst [31:0] $end
+$var wire 26 S immj [25:0] $end
+$var wire 16 T immi [15:0] $end
+$var wire 1 ! halt $end
+$var wire 6 U funct [5:0] $end
+$var wire 32 V ext_imm [31:0] $end
+$var wire 32 W alu_result [31:0] $end
+$var wire 2 X WB [1:0] $end
+$var wire 1 Y SignExtend $end
+$var wire 1 Z RegWrite $end
+$var wire 1 [ RegDst $end
+$var wire 32 \ PC_plus4 [31:0] $end
+$var wire 1 ] MemtoReg $end
+$var wire 1 ^ MemWrite $end
+$var wire 1 _ MemRead $end
+$var wire 3 ` MEM [2:0] $end
+$var wire 5 a IDtoEX_destinationWire [4:0] $end
+$var wire 6 b EX [5:0] $end
+$var wire 1 c Branch $end
+$var wire 1 d ALUSrc $end
+$var wire 4 e ALUOp [3:0] $end
+$var reg 32 f EXtoMEM_ADDresult [31:0] $end
+$var reg 32 g EXtoMEM_ALUresult [31:0] $end
+$var reg 3 h EXtoMEM_MEMreg [2:0] $end
+$var reg 2 i EXtoMEM_WBreg [1:0] $end
+$var reg 5 j EXtoMEM_destination [4:0] $end
+$var reg 32 k EXtoMEM_nextPC [31:0] $end
+$var reg 32 l EXtoMEM_wrdata [31:0] $end
+$var reg 1 , EXtoMEM_zero $end
+$var reg 6 m IDtoEX_EXreg [5:0] $end
+$var reg 3 n IDtoEX_MEMreg [2:0] $end
+$var reg 2 o IDtoEX_WBreg [1:0] $end
+$var reg 32 p IDtoEX_ext [31:0] $end
+$var reg 32 q IDtoEX_nextPC [31:0] $end
+$var reg 5 r IDtoEX_rd [4:0] $end
+$var reg 32 s IDtoEX_rd_data1 [31:0] $end
+$var reg 32 t IDtoEX_rd_data2 [31:0] $end
+$var reg 5 u IDtoEX_rt [4:0] $end
+$var reg 32 v IFtoID_nextPC [31:0] $end
+$var reg 32 w IR [31:0] $end
+$var reg 32 x MEMtoWB_ALUresult [31:0] $end
+$var reg 2 y MEMtoWB_WBreg [1:0] $end
+$var reg 5 z MEMtoWB_destination [4:0] $end
+$var reg 32 { MEMtoWB_memorydata [31:0] $end
+$var reg 32 | PC [31:0] $end
+$var reg 32 } addResult [31:0] $end
+$scope module alu $end
+$var wire 4 ~ funct [3:0] $end
+$var wire 32 !" operand1 [31:0] $end
+$var wire 32 "" operand2 [31:0] $end
+$var wire 5 #" shamt [4:0] $end
+$var reg 32 $" alu_result [31:0] $end
+$var reg 1 F zero $end
+$upscope $end
+$scope module ctrl $end
+$var wire 1 < PCSrc $end
+$var wire 1 " clk $end
+$var wire 6 %" funct [5:0] $end
+$var wire 6 &" opcode [5:0] $end
+$var wire 1 # rst $end
+$var reg 4 '" ALUOp [3:0] $end
+$var reg 1 (" ALUSrc $end
+$var reg 1 )" Branch $end
+$var reg 6 *" EX [5:0] $end
+$var reg 1 +" JR $end
+$var reg 1 ," Jump $end
+$var reg 3 -" MEM [2:0] $end
+$var reg 1 ." MemRead $end
+$var reg 1 /" MemWrite $end
+$var reg 1 0" MemtoReg $end
+$var reg 1 1" RegDst $end
+$var reg 1 2" RegWrite $end
+$var reg 1 3" SavePC $end
+$var reg 1 Y SignExtend $end
+$var reg 2 4" WB [1:0] $end
+$upscope $end
+$scope module hazard $end
+$var wire 2 5" EXtoMEM_WBwire [1:0] $end
+$var wire 5 6" EXtoMEM_destinationWire [4:0] $end
+$var wire 2 7" IDtoEX_WBwire [1:0] $end
+$var wire 5 8" IDtoEX_destinationWire [4:0] $end
+$var wire 2 9" MEMtoWB_WBwire [1:0] $end
+$var wire 5 :" MEMtoWB_destinationWire [4:0] $end
+$var wire 1 " clk $end
+$var wire 5 ;" rd_addr1 [4:0] $end
+$var wire 5 <" rd_addr2 [4:0] $end
+$var wire 1 # rst $end
+$var wire 1 =" MEMtoWB_RegWrite $end
+$var wire 1 >" IDtoEX_RegWrite $end
+$var wire 1 ?" EXtoMEM_RegWrite $end
+$var reg 1 H stallTime $end
+$upscope $end
+$scope module mem $end
+$var wire 1 ^ MemWrite $end
+$var wire 1 " clk $end
+$var wire 32 @" inst_addr [31:0] $end
+$var wire 32 A" mem_addr [31:0] $end
+$var wire 32 B" mem_write_data [31:0] $end
+$var wire 1 # rst $end
+$var reg 32 C" inst [31:0] $end
+$var reg 32 D" mem_read_data [31:0] $end
+$upscope $end
+$scope module rf $end
+$var wire 1 Z RegWrite $end
+$var wire 1 " clk $end
+$var wire 5 E" rd_addr1 [4:0] $end
+$var wire 5 F" rd_addr2 [4:0] $end
+$var wire 1 # rst $end
+$var wire 5 G" wr_addr [4:0] $end
+$var wire 32 H" wr_data [31:0] $end
+$var reg 32 I" rd_data1 [31:0] $end
+$var reg 32 J" rd_data2 [31:0] $end
+$upscope $end
+$upscope $end
+$scope begin CLOCK_GENERATOR $end
+$upscope $end
+$scope begin REF_INIT $end
+$upscope $end
+$scope begin Settings $end
+$upscope $end
+$upscope $end

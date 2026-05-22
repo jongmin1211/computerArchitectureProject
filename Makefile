@@ -1,5 +1,5 @@
 # 설정
-VERILOG_SOURCES = ALU.v CPU.v CTRL.v GLOBAL.v MEM.v RF.v CPU_tb.v
+VERILOG_SOURCES = ALU.v CPU.v CTRL.v GLOBAL.v MEM.v RF.v CPU_tb.v HAZARD.v
 TOP_OUT = sim.out
 
 # 현재 디렉토리에서 'testcase'로 시작하는 모든 디렉토리 찾기

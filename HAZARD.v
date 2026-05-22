@@ -1,14 +1,14 @@
 module HAZARD (
     input clk,
     input rst,
-    input rd_addr1,
-	input rd_addr2,
-	input IDtoEX_destinationWire,
-    input IDtoEX_WBwire,
-	input EXtoMEM_destinationWire,
-    input EXtoMEM_WBwire,
-	input MEMtoWB_destinationWire,
-	input MEMtoWB_WBwire,
+    input [4:0] rd_addr1,
+	input [4:0] rd_addr2,
+	input [4:0] IDtoEX_destinationWire,
+    input [1:0] IDtoEX_WBwire,
+	input [4:0] EXtoMEM_destinationWire,
+    input [1:0] EXtoMEM_WBwire,
+	input [4:0] MEMtoWB_destinationWire,
+	input [1:0] MEMtoWB_WBwire,
 
 	output reg  stallTime
 );
@@ -17,9 +17,9 @@ module HAZARD (
     wire EXtoMEM_RegWrite;
     wire MEMtoWB_RegWrite;
 
-    assign IDtoEX_RegWrite = IDtoEX_WBwire[0]
-    assign EXtoMEM_RegWrite = EXtoMEM_WBwire[0]
-    assign MEMtoWB_RegWrite = MEMtoWB_WBwire[0]
+    assign IDtoEX_RegWrite = IDtoEX_WBwire[0];
+    assign EXtoMEM_RegWrite = EXtoMEM_WBwire[0];
+    assign MEMtoWB_RegWrite = MEMtoWB_WBwire[0];
 
 
 always @(posedge clk) begin

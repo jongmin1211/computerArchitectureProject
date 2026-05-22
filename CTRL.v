@@ -15,19 +15,21 @@ module CTRL(
 	output reg [2:0] MEM,
 	output reg [5:0] EX,
 
-	output reg SignExtend,
+	output reg SignExtend
     );
-	reg RegDst,
-	reg Jump,
-	reg Branch,
-	reg JR,
-	reg MemRead,
-	reg MemtoReg,
-	reg MemWrite,
-	reg ALUSrc,
-	reg RegWrite,
-	reg [3:0] ALUOp,
-	reg SavePC
+
+	reg RegDst;
+	reg Jump;
+	reg Branch;
+	reg JR;
+	reg MemRead;
+	reg MemtoReg;
+	reg MemWrite;
+	reg ALUSrc;
+	reg RegWrite;
+	reg [3:0] ALUOp;
+	reg SavePC;
+
 	always @(*) begin
 		//ininitailize to 0
 		RegDst = 0; Jump = 0; Branch = 0; MemRead = 0; MemtoReg = 0;

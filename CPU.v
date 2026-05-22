@@ -102,9 +102,9 @@ module CPU(
 
 	wire 			SignExtend;
 
-	wire 			WB;
-	wire 			MEM;
-	wire  			EX;
+	wire [1:0]			WB;
+	wire [2:0]			MEM;
+	wire  [5:0]			EX;
 
 	// Sign extend the immediate
 	wire [31:0]		ext_imm;
@@ -138,7 +138,7 @@ module CPU(
 	wire [31:0]  	PC_plus4 = PC + 32'd4;
 
 
-	// Define the wires
+	//IR wire 연결
 	assign halt				= (IRwire == 32'b0);
 	assign ext_imm 			= (SignExtend) ? {{16{immi[15]}}, immi} : {16'b0, immi};
 	assign opcode			= IRwire[31:26];
@@ -150,7 +150,30 @@ module CPU(
 	assign immi				= IRwire[15:0];
 	assign immj				= IRwire[25:0];
 
-
+	//ctrl, latch wire 연결
+	assign IDtoEX_WBwire      = IDtoEX_WBreg;
+	assign IDtoEX_MEMwire     = IDtoEX_MEMreg;
+	assign IDtoEX_EXwire      = IDtoEX_EXreg;
+	assign EXtoMEM_WBwire     = EXtoMEM_WBreg;
+	assign EXtoMEM_MEMwire    = EXtoMEM_MEMreg;
+	assign MEMtoWB_WBwire     = MEMtoWB_WBreg;
+	assign IRwire             = IR;
+	assign IFtoID_nextPCwire  = IFtoID_nextPC;
+	assign IDtoEX_nextPCwire  = IDtoEX_nextPC;
+	assign EXtoMEM_nextPCwire = EXtoMEM_nextPC;
+	assign IDtoEX_extWire     = IDtoEX_ext;
+	assign IDtoEX_rd_data1Wire= IDtoEX_rd_data1;
+	assign IDtoEX_rd_data2Wire= IDtoEX_rd_data2;
+	assign EXtoMEM_zeroWire   = EXtoMEM_zero;
+	assign EXtoMEM_ALUresultWire = EXtoMEM_ALUresult;
+	assign EXtoMEM_ADDresultWire = EXtoMEM_ADDresult;
+	assign MEMtoWB_ALUresultWire = MEMtoWB_ALUresult;
+	assign MEMtoWB_memorydataWire= MEMtoWB_memorydata;
+	assign IDtoEX_rtWire      = IDtoEX_rt;
+	assign IDtoEX_rdWire      = IDtoEX_rd;
+	assign EXtoMEM_destinationWire = EXtoMEM_destination;
+	assign MEMtoWB_destinationWire = MEMtoWB_destination;
+	assign addResultWire      = addResult;
 
 	//RF wire 연결
 	assign rd_addr1 = rs;
@@ -167,7 +190,7 @@ module CPU(
 	assign operand2 = ALUSrc ? IDtoEX_extWire : IDtoEX_rd_data2Wire;
 
 
-	assign 	PCSrc 	= Branch & EXtoMEM_zeroWire;
+	assign 	PCSrc 	= branch & EXtoMEM_zeroWire;
 	assign	{ALUOp, ALUSrc, RegDst} 	= IDtoEX_EXwire;
 	assign	{Branch, MemRead, MemWrite} = EXtoMEM_MEMwire;
 	assign	{RegWrite, MemtoReg} 		= MEMtoWB_WBwire;
@@ -185,6 +208,21 @@ module CPU(
 			IDtoEX_EXreg <= 6'b000000;
 			IDtoEX_MEMreg <= 3'b000;
 			IDtoEX_WBreg <= 2'b00;
+
+			// EX/MEM 레지스터도 Flush (EX에 있던 잘못된 명령어가 MEM으로 못 넘어가게 막음)
+			EXtoMEM_WBreg       <= 2'b00;
+			EXtoMEM_MEMreg      <= 3'b000;
+			EXtoMEM_ADDresult   <= 0;
+			EXtoMEM_zero        <= 0;
+			EXtoMEM_ALUresult   <= 0;
+			EXtoMEM_wrdata      <= 0;
+			EXtoMEM_destination <= 0;
+
+			// MEM/WB는 정상 진행 (현재 MEM에 있는 분기 명령어가 무사히 빠져나가야 하므로)
+			MEMtoWB_WBreg       <= EXtoMEM_WBwire;
+			MEMtoWB_memorydata  <= mem_read_data;
+			MEMtoWB_ALUresult   <= EXtoMEM_ALUresultWire;
+			MEMtoWB_destination <= EXtoMEM_destinationWire;
 		end
 
 		else if (stallTime) begin
@@ -301,12 +339,12 @@ module CPU(
 		.rd_addr1(rd_addr1),
 		.rd_addr2(rd_addr2),
 		.IDtoEX_destinationWire(IDtoEX_destinationWire),
-		.IDtoEX_WBwire(IDtoEX_WBWire),
+		.IDtoEX_WBwire(IDtoEX_WBwire),
 		.EXtoMEM_destinationWire(EXtoMEM_destinationWire),
 		.EXtoMEM_WBwire(EXtoMEM_WBwire),
-		.MEMtoWB_destinationWire(MEMtoWB_destinationWIre),
+		.MEMtoWB_destinationWire(MEMtoWB_destinationWire),
 		.MEMtoWB_WBwire(MEMtoWB_WBwire),
 		//output
 		.stallTime(stallTime)
-	)
+	);
 endmodule
