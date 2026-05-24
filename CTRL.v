@@ -14,6 +14,7 @@ module CTRL(
 	output reg [2:0] MEM,
 	output reg [5:0] EX,
 
+	output reg SavePC;
 	output reg SignExtend
     );
 
@@ -27,7 +28,6 @@ module CTRL(
 	reg ALUSrc;
 	reg RegWrite;
 	reg [3:0] ALUOp;
-	reg SavePC;
 
 	always @(*) begin
 		//ininitailize to 0

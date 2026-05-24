@@ -102,7 +102,7 @@ module CPU(
 	wire 			Jump;
 	wire 			JR;
 	wire 			SignExtend;
-
+	wire 			SavePC;
 	wire [1:0]			WB;
 	wire [2:0]			MEM;
 	wire  [5:0]			EX;
@@ -339,6 +339,7 @@ end
 		.WB(WB),
 		.MEM(MEM),
 		.EX(EX),
+		.SavePC(SavePC),
 		.SignExtend(SignExtend)
 	);
 
