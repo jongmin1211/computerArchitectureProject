@@ -98,7 +98,7 @@ module CPU(
 	wire 			MemRead;
 	wire 			MemWrite;
 	wire 			MemtoReg;
-	wire 			branch;
+	wire 			Branch;
 
 	wire 			SignExtend;
 
@@ -150,6 +150,10 @@ module CPU(
 	assign immi				= IRwire[15:0];
 	assign immj				= IRwire[25:0];
 
+	assign inst_addr = PC;
+	assign mem_addr = EXtoMEM_ALUresultWire;
+	assign mem_write_data = EXtoMEM_wrdataWire;
+
 	//ctrl, latch wire 연결
 	assign IDtoEX_WBwire      = IDtoEX_WBreg;
 	assign IDtoEX_MEMwire     = IDtoEX_MEMreg;
@@ -181,7 +185,7 @@ module CPU(
 	assign wr_addr = MEMtoWB_destinationWire;
 
 	assign wr_data = MemtoReg ? MEMtoWB_ALUresultWire : MEMtoWB_memorydataWire;
-	
+
 	//ALU wire 연결
 	always @(*) begin	
 		addResult = IDtoEX_nextPCwire + (IDtoEX_extWire << 2);
@@ -190,7 +194,7 @@ module CPU(
 	assign operand2 = ALUSrc ? IDtoEX_extWire : IDtoEX_rd_data2Wire;
 
 
-	assign 	PCSrc 	= branch & EXtoMEM_zeroWire;
+	assign 	PCSrc 	= Branch & EXtoMEM_zeroWire;
 	assign	{ALUOp, ALUSrc, RegDst} 	= IDtoEX_EXwire;
 	assign	{Branch, MemRead, MemWrite} = EXtoMEM_MEMwire;
 	assign	{RegWrite, MemtoReg} 		= MEMtoWB_WBwire;
@@ -203,7 +207,7 @@ module CPU(
 
 		//flush younger instructions
 		else if (PCSrc) begin
-			PC <= EXtoMEM_ADDresult;
+			PC <= EXtoMEM_ADDresultWire;
 			IR <= 0;
 			IDtoEX_EXreg <= 6'b000000;
 			IDtoEX_MEMreg <= 3'b000;
@@ -226,18 +230,56 @@ module CPU(
 		end
 
 		else if (stallTime) begin
-			EXtoMEM_WBreg <= IDtoEX_WBwire;
-			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
-			EXtoMEM_ADDresult <= addResultWire;
-			EXtoMEM_zero <= zero;
-			EXtoMEM_ALUresult <= alu_result;
-			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+    // =========================
+    // Freeze IF stage
+    // =========================
+    PC <= PC;
 
-			MEMtoWB_WBreg <= EXtoMEM_WBwire;
-			MEMtoWB_memorydata <= mem_read_data;
-			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
-			MEMtoWB_destination <= EXtoMEM_destinationWire;
-		end
+    // =========================
+    // Freeze IF/ID pipeline reg
+    // =========================
+    IR <= IR;
+    IFtoID_nextPC <= IFtoID_nextPC;
+
+    // =========================
+    // Insert bubble into ID/EX
+    // =========================
+    IDtoEX_WBreg <= 2'b00;
+    IDtoEX_MEMreg <= 3'b000;
+    IDtoEX_EXreg <= 6'b000000;
+
+    IDtoEX_ext <= 32'b0;
+    IDtoEX_nextPC <= 32'b0;
+    IDtoEX_rd_data1 <= 32'b0;
+    IDtoEX_rd_data2 <= 32'b0;
+
+    IDtoEX_rt <= 5'b0;
+    IDtoEX_rd <= 5'b0;
+
+    // =========================
+    // EX stage continues
+    // =========================
+    EXtoMEM_WBreg <= IDtoEX_WBwire;
+    EXtoMEM_MEMreg <= IDtoEX_MEMwire;
+
+    EXtoMEM_ADDresult <= addResultWire;
+    EXtoMEM_zero <= zero;
+    EXtoMEM_ALUresult <= alu_result;
+
+    EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+
+    EXtoMEM_destination <= IDtoEX_destinationWire;
+
+    // =========================
+    // MEM stage continues
+    // =========================
+    MEMtoWB_WBreg <= EXtoMEM_WBwire;
+
+    MEMtoWB_memorydata <= mem_read_data;
+    MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
+
+    MEMtoWB_destination <= EXtoMEM_destinationWire;
+end
 
 		else begin
 			PC <= PC_plus4;
@@ -334,8 +376,6 @@ module CPU(
 
 	HAZARD hazard (
 		//input
-		.clk(clk),
-		.rst(rst),
 		.rd_addr1(rd_addr1),
 		.rd_addr2(rd_addr2),
 		.IDtoEX_destinationWire(IDtoEX_destinationWire),

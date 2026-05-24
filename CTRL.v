@@ -8,8 +8,7 @@ module CTRL(
 	input [5:0] opcode,
 	input [5:0] funct,
 	input PCSrc,
-
-	//
+	
 	// output various ports
 	output reg [1:0] WB,
 	output reg [2:0] MEM,
@@ -45,15 +44,16 @@ module CTRL(
 				else begin
 					RegDst = 1;
 					RegWrite = 1;
+					MemtoReg = 1;
 				end
 				case (funct)
-					`FUNCT_ADDU: 	ALUOp = `ALU_ADDU;
+					`FUNCT_ADDU: 		ALUOp = `ALU_ADDU;
 					`FUNCT_AND: 		ALUOp = `ALU_AND;
 					`FUNCT_NOR: 		ALUOp = `ALU_NOR;
-					`FUNCT_OR: 		ALUOp = `ALU_OR;
+					`FUNCT_OR: 			ALUOp = `ALU_OR;
 					`FUNCT_SLT: 		ALUOp = `ALU_SLT;
-					`FUNCT_SLTU: 	ALUOp = `ALU_SLTU;
-					`FUNCT_SUBU: 	ALUOp = `ALU_SUBU;
+					`FUNCT_SLTU: 		ALUOp = `ALU_SLTU;
+					`FUNCT_SUBU: 		ALUOp = `ALU_SUBU;
 					`FUNCT_XOR: 		ALUOp = `ALU_XOR;
 					`FUNCT_SLL: 		ALUOp = `ALU_SLL;
 					`FUNCT_SRA: 		ALUOp = `ALU_SRA;
@@ -111,19 +111,24 @@ module CTRL(
 				
 			end
 		endcase
-	end
-
-	always @(posedge clk) begin
-		//if branch is taken, flush younger instructions
 		if (PCSrc) begin
 			RegWrite = 0;
 			MemWrite = 0;
 		end
-		//latching
-		EX <= {ALUOp, ALUSrc, RegDst};
-		MEM <= {Branch, MemRead, MemWrite};
-		WB <= {RegWrite, MemtoReg};
+		//if branch is taken, flush younger instructions
+		EX  = {ALUOp, ALUSrc, RegDst};
+		MEM = {Branch, MemRead, MemWrite};
+		WB  = {RegWrite, MemtoReg};
+		if (PCSrc) begin
+			RegWrite = 0;
+			MemWrite = 0;
+		end
+		//if branch is taken, flush younger instructions
+		EX  = {ALUOp, ALUSrc, RegDst};
+		MEM = {Branch, MemRead, MemWrite};
+		WB  = {RegWrite, MemtoReg};
 	end
+
 
 	
 endmodule
