@@ -99,7 +99,8 @@ module CPU(
 	wire 			MemWrite;
 	wire 			MemtoReg;
 	wire 			Branch;
-
+	wire 			Jump;
+	wire 			JR;
 	wire 			SignExtend;
 
 	wire [1:0]			WB;
@@ -281,6 +282,14 @@ module CPU(
     MEMtoWB_destination <= EXtoMEM_destinationWire;
 end
 
+		else if (Jump)	begin 
+			PC <= {IFtoID_nextPCwire[31:28], immj, 2'b00};
+			IR <= 0;
+		end;	
+		else if (JR)	begin 
+			PC <= IDtoEX_rd_data1Wire;
+			IR <= 0;
+		end
 		else begin
 			PC <= PC_plus4;
 
