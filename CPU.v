@@ -70,9 +70,15 @@ module CPU(
 	reg [31:0] 		IFtoID_nextPC;
 	reg [31:0] 		IDtoEX_nextPC;
 	reg [31:0] 		EXtoMEM_nextPC;
+	reg [31:0] 		EXtoMEM_PCplus4;
+	reg [31:0]		MEMtoWB_PCplus4;
+
+	
 	wire [31:0] 	IFtoID_nextPCwire;
 	wire [31:0] 	IDtoEX_nextPCwire;
 	wire [31:0] 	EXtoMEM_nextPCwire;
+	wire [31:0] 	EXtoMEM_PCplus4wire;
+	wire [31:0]		MEMtoWB_PCplus4wire;
 
 	//PC alu
 	reg [31:0]		addResult;
@@ -103,7 +109,7 @@ module CPU(
 	wire 			JR;
 	wire 			SignExtend;
 	wire 			SavePC;
-	wire [1:0]			WB;
+	wire [2:0]			WB;
 	wire [2:0]			MEM;
 	wire  [5:0]			EX;
 
@@ -179,13 +185,14 @@ module CPU(
 	assign EXtoMEM_destinationWire = EXtoMEM_destination;
 	assign MEMtoWB_destinationWire = MEMtoWB_destination;
 	assign addResultWire      = addResult;
-
+	assign EXtoMEM_PCplus4wire = EXtoMEM_PCplus4;
+	assign MEMtoWB_PCplus4wire = MEMtoWB_PCplus4;
 	//RF wire 연결
 	assign rd_addr1 = rs;
 	assign rd_addr2 = rt;
-	assign wr_addr = MEMtoWB_destinationWire;
+	assign wr_addr = SavePC ? 5'd31 : MEMtoWB_destinationWire;
 
-	assign wr_data = MemtoReg ? MEMtoWB_ALUresultWire : MEMtoWB_memorydataWire;
+	assign wr_data = SavePC ? MEMtoWB_PCplus4wire : MemtoReg ? MEMtoWB_memorydataWire : MEMtoWB_ALUresultWire;
 
 	//ALU wire 연결
 	always @(*) begin	
@@ -198,7 +205,7 @@ module CPU(
 	assign 	PCSrc 	= Branch & EXtoMEM_zeroWire;
 	assign	{ALUOp, ALUSrc, RegDst} 	= IDtoEX_EXwire;
 	assign	{Branch, MemRead, MemWrite} = EXtoMEM_MEMwire;
-	assign	{RegWrite, MemtoReg} 		= MEMtoWB_WBwire;
+	assign	{SavePC, RegWrite, MemtoReg} 	= MEMtoWB_WBwire;
 
 	assign IDtoEX_destinationWire = RegDst ? IDtoEX_rdWire : IDtoEX_rtWire;
 
@@ -285,7 +292,7 @@ end
 		else if (Jump)	begin 
 			PC <= {IFtoID_nextPCwire[31:28], immj, 2'b00};
 			IR <= 0;
-		end;	
+		end
 		else if (JR)	begin 
 			PC <= IDtoEX_rd_data1Wire;
 			IR <= 0;
@@ -317,12 +324,13 @@ end
 			EXtoMEM_zero <= zero;
 			EXtoMEM_ALUresult <= alu_result;
 			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+			EXtoMEM_PCplus4 <= IDtoEX_nextPCwire;
 
 			MEMtoWB_WBreg <= EXtoMEM_WBwire;
 			MEMtoWB_memorydata <= mem_read_data;
 			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
 			MEMtoWB_destination <= EXtoMEM_destinationWire;
-			
+			MEMtoWB_PCplus4 <= EXtoMEM_PCplus4wire;
 
 
 		end
@@ -339,7 +347,8 @@ end
 		.WB(WB),
 		.MEM(MEM),
 		.EX(EX),
-		.SavePC(SavePC),
+		.Jump(Jump),
+		.JR(JR),
 		.SignExtend(SignExtend)
 	);
 

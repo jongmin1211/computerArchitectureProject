@@ -10,24 +10,25 @@ module CTRL(
 	input PCSrc,
 	
 	// output various ports
-	output reg [1:0] WB,
+	output reg [2:0] WB,
 	output reg [2:0] MEM,
 	output reg [5:0] EX,
 
-	output reg SavePC;
+	output reg Jump,
+	output reg JR,
 	output reg SignExtend
     );
 
 	reg RegDst;
-	reg Jump;
 	reg Branch;
-	reg JR;
+
 	reg MemRead;
 	reg MemtoReg;
 	reg MemWrite;
 	reg ALUSrc;
 	reg RegWrite;
 	reg [3:0] ALUOp;
+	reg SavePC;
 
 	always @(*) begin
 		//ininitailize to 0
@@ -126,7 +127,7 @@ module CTRL(
 		//if branch is taken, flush younger instructions
 		EX  = {ALUOp, ALUSrc, RegDst};
 		MEM = {Branch, MemRead, MemWrite};
-		WB  = {RegWrite, MemtoReg};
+		WB  = {SavePC, RegWrite, MemtoReg};
 	end
 
 
