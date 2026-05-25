@@ -1,2 +1,2 @@
-computer architecture homework4
-multicycle CPU implimentation
+computer architecture homework5
+pipelined CPU (Basic) impliment

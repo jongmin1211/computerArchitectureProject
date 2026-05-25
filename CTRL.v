@@ -77,7 +77,7 @@ module CTRL(
 			`OP_BNE:   begin SignExtend = 1; Branch = 1; ALUOp = `ALU_NEQ; end
 
 			// J-Type
-			`OP_J:   begin Jump = 1;                            end
+			`OP_J:   begin Jump = 1;                           end
 			`OP_JAL: begin Jump = 1; RegWrite = 1; SavePC = 1; end
 
 			default: begin end
