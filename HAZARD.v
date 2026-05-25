@@ -11,7 +11,7 @@ module HAZARD (
     input [4:0] MEMtoWB_destinationWire,
     input [2:0] MEMtoWB_WBwire,
 
-    output reg stallTime
+    output reg stall
 );
 
 wire IDtoEX_RegWrite;
@@ -32,7 +32,7 @@ always @(*) begin
             (IDtoEX_destinationWire == rd_addr2)
         )
     )
-        stallTime = 1;
+        stall = 1;
 
     else if (
         EXtoMEM_RegWrite &&
@@ -42,7 +42,7 @@ always @(*) begin
             (EXtoMEM_destinationWire == rd_addr2)
         )
     )
-        stallTime = 1;
+        stall = 1;
 
     else if (
         MEMtoWB_RegWrite &&
@@ -52,10 +52,10 @@ always @(*) begin
             (MEMtoWB_destinationWire == rd_addr2)
         )
     )
-        stallTime = 1;
+        stall = 1;
 
     else
-        stallTime = 0;
+        stall = 0;
 
 end
 

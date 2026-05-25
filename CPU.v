@@ -11,7 +11,7 @@ module CPU (
 	// =========================================================================
 	
 	// Hazard Control Wires
-	wire               stallTime;
+	wire               stall;
 
 	// ---- IF/ID Stage ----
 	reg  [31:0]        IR;
@@ -73,14 +73,12 @@ module CPU (
 	reg  [4:0]         MEMtoWB_destination;
 	reg  [31:0]        MEMtoWB_PCplus4;
 	reg                MEMtoWB_halt;
-	reg                is_halt;
 
 	wire [2:0]         MEMtoWB_WBwire;
 	wire [31:0]        MEMtoWB_ALUresultWire;
 	wire [31:0]        MEMtoWB_memorydataWire;
 	wire [4:0]         MEMtoWB_destinationWire;
 	wire [31:0]        MEMtoWB_PCplus4wire;
-	wire               MEMtoWB_haltWire;
 
 	// =========================================================================
 	// 2. Internal Datapath Wires (Instruction Split & Control)
@@ -194,7 +192,6 @@ module CPU (
 	assign MEMtoWB_memorydataWire = MEMtoWB_memorydata;
 	assign MEMtoWB_destinationWire= MEMtoWB_destination;
 	assign MEMtoWB_PCplus4wire    = MEMtoWB_PCplus4;
-	assign MEMtoWB_haltWire       = MEMtoWB_halt;
 	
 	assign addResultWire          = addResult;
 
@@ -219,7 +216,7 @@ module CPU (
 	assign {SavePC, RegWrite, MemtoReg} = MEMtoWB_WBwire;
 
 	assign IDtoEX_destinationWire = IDtoEX_WBwire[2] ? 5'd31 : RegDst ? IDtoEX_rdWire : IDtoEX_rtWire;
-	assign halt = is_halt;
+	assign halt = MEMtoWB_halt;
 
 	// =========================================================================
 	// 4. Sequential Logic (Clock & Reset Control)
@@ -256,11 +253,10 @@ module CPU (
 			MEMtoWB_PCplus4     <= EXtoMEM_PCplus4wire;
 			MEMtoWB_halt        <= 0;
 
-			is_halt             = 0; 
 		end
 
 		// ---- Case 2: Hazard Detected (Stall) ----
-		else if (stallTime) begin
+		else if (stall) begin
 			// Freeze IF stage
 			PC                  <= PC;
 
@@ -299,7 +295,6 @@ module CPU (
 			MEMtoWB_PCplus4     <= EXtoMEM_PCplus4wire;
 			MEMtoWB_halt        <= EXtoMEM_haltWire;
 
-			is_halt             <= MEMtoWB_haltWire;
 		end
 
 		// ---- Case 3: Jump Instruction ----
@@ -337,7 +332,6 @@ module CPU (
 			MEMtoWB_PCplus4     <= EXtoMEM_PCplus4wire;
 			MEMtoWB_halt        <= EXtoMEM_haltWire;
 
-			is_halt             <= MEMtoWB_haltWire;
 		end
 
 		// ---- Case 4: Jump Register (JR) ----
@@ -375,7 +369,6 @@ module CPU (
 			MEMtoWB_PCplus4     <= EXtoMEM_PCplus4wire;
 			MEMtoWB_halt        <= EXtoMEM_haltWire;
 
-			is_halt             <= MEMtoWB_haltWire;
 		end
 
 		// ---- Case 5: Normal Execution ----
@@ -413,7 +406,6 @@ module CPU (
 			MEMtoWB_PCplus4     <= EXtoMEM_PCplus4wire;
 			MEMtoWB_halt        <= EXtoMEM_haltWire;
 
-			is_halt             <= MEMtoWB_haltWire;
 		end
 	end
 
@@ -474,7 +466,7 @@ module CPU (
 		.EXtoMEM_WBwire         (EXtoMEM_WBwire),
 		.MEMtoWB_destinationWire(MEMtoWB_destinationWire),
 		.MEMtoWB_WBwire         (MEMtoWB_WBwire),
-		.stallTime              (stallTime)
+		.stall              	(stall)
 	);
 	
 endmodule
