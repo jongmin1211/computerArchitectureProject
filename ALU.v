@@ -13,6 +13,8 @@ module ALU(
 	
 	// FIXME
 	always @(*) begin
+		alu_result = 0;
+		zero = 0;
 		case (funct)
 			`ALU_ADDU: 
 				alu_result = operand1 + operand2;

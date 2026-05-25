@@ -38,6 +38,7 @@ end
         #15
         rst = 0;
 		@(posedge halt);
+
 		$display("Program Terminate\n");
 
 		for (i = 0; i < 32; i = i + 1) begin

@@ -3,13 +3,13 @@ module HAZARD (
     input [4:0] rd_addr2,
 
     input [4:0] IDtoEX_destinationWire,
-    input [1:0] IDtoEX_WBwire,
+    input [2:0] IDtoEX_WBwire,
 
     input [4:0] EXtoMEM_destinationWire,
-    input [1:0] EXtoMEM_WBwire,
+    input [2:0] EXtoMEM_WBwire,
 
     input [4:0] MEMtoWB_destinationWire,
-    input [1:0] MEMtoWB_WBwire,
+    input [2:0] MEMtoWB_WBwire,
 
     output reg stallTime
 );

@@ -10,18 +10,21 @@ module CPU(
 	//hazard
 	wire  				stallTime;
 	//define latchs for control
-	reg [1:0]			IDtoEX_WBreg;
+	reg [2:0]			IDtoEX_WBreg;
 	reg [2:0]			IDtoEX_MEMreg;
 	reg [5:0]			IDtoEX_EXreg;
-	reg [1:0]			EXtoMEM_WBreg;
+	reg  [4:0] 			IDtoEX_shamt;
+	reg 				
+	reg [2:0]			EXtoMEM_WBreg;
 	reg [2:0]			EXtoMEM_MEMreg;
-	reg [1:0]			MEMtoWB_WBreg;
-	wire [1:0]			IDtoEX_WBwire;
+	reg [2:0]			MEMtoWB_WBreg;
+	wire [2:0]			IDtoEX_WBwire;
 	wire [2:0]			IDtoEX_MEMwire;
 	wire [5:0]			IDtoEX_EXwire;
-	wire [1:0]			EXtoMEM_WBwire;
+	wire [4:0] 			IDtoEX_shamtWire;
+	wire [2:0]			EXtoMEM_WBwire;
 	wire [2:0]			EXtoMEM_MEMwire;
-	wire [1:0]			MEMtoWB_WBwire;
+	wire [2:0]			MEMtoWB_WBwire;
 
 
 	//for IR
@@ -69,14 +72,14 @@ module CPU(
 	//for pc + 4
 	reg [31:0] 		IFtoID_nextPC;
 	reg [31:0] 		IDtoEX_nextPC;
-	reg [31:0] 		EXtoMEM_nextPC;
+
 	reg [31:0] 		EXtoMEM_PCplus4;
 	reg [31:0]		MEMtoWB_PCplus4;
 
 	
 	wire [31:0] 	IFtoID_nextPCwire;
 	wire [31:0] 	IDtoEX_nextPCwire;
-	wire [31:0] 	EXtoMEM_nextPCwire;
+
 	wire [31:0] 	EXtoMEM_PCplus4wire;
 	wire [31:0]		MEMtoWB_PCplus4wire;
 
@@ -165,13 +168,13 @@ module CPU(
 	assign IDtoEX_WBwire      = IDtoEX_WBreg;
 	assign IDtoEX_MEMwire     = IDtoEX_MEMreg;
 	assign IDtoEX_EXwire      = IDtoEX_EXreg;
+	assign IDtoEX_shamtWire = IDtoEX_shamt;	
 	assign EXtoMEM_WBwire     = EXtoMEM_WBreg;
 	assign EXtoMEM_MEMwire    = EXtoMEM_MEMreg;
 	assign MEMtoWB_WBwire     = MEMtoWB_WBreg;
 	assign IRwire             = IR;
 	assign IFtoID_nextPCwire  = IFtoID_nextPC;
 	assign IDtoEX_nextPCwire  = IDtoEX_nextPC;
-	assign EXtoMEM_nextPCwire = EXtoMEM_nextPC;
 	assign IDtoEX_extWire     = IDtoEX_ext;
 	assign IDtoEX_rd_data1Wire= IDtoEX_rd_data1;
 	assign IDtoEX_rd_data2Wire= IDtoEX_rd_data2;
@@ -192,7 +195,7 @@ module CPU(
 	assign rd_addr2 = rt;
 	assign wr_addr = SavePC ? 5'd31 : MEMtoWB_destinationWire;
 
-	assign wr_data = SavePC ? MEMtoWB_PCplus4wire : MemtoReg ? MEMtoWB_memorydataWire : MEMtoWB_ALUresultWire;
+	assign wr_data = SavePC ? MEMtoWB_PCplus4wire : MemtoReg ? MEMtoWB_ALUresultWire : MEMtoWB_memorydataWire;
 
 	//ALU wire 연결
 	always @(*) begin	
@@ -207,7 +210,7 @@ module CPU(
 	assign	{Branch, MemRead, MemWrite} = EXtoMEM_MEMwire;
 	assign	{SavePC, RegWrite, MemtoReg} 	= MEMtoWB_WBwire;
 
-	assign IDtoEX_destinationWire = RegDst ? IDtoEX_rdWire : IDtoEX_rtWire;
+	assign IDtoEX_destinationWire = IDtoEX_WBwire[2] ? 5'd31 : RegDst ? IDtoEX_rdWire : IDtoEX_rtWire;
 
 	// Update the Clock, PC
 	always @(posedge clk) begin
@@ -216,96 +219,89 @@ module CPU(
 		//flush younger instructions
 		else if (PCSrc) begin
 			PC <= EXtoMEM_ADDresultWire;
-			IR <= 0;
+			IR <= 32'hFC00_0000;
+
 			IDtoEX_EXreg <= 6'b000000;
 			IDtoEX_MEMreg <= 3'b000;
-			IDtoEX_WBreg <= 2'b00;
+			IDtoEX_WBreg <= 3'b000;
 
 			// EX/MEM 레지스터도 Flush (EX에 있던 잘못된 명령어가 MEM으로 못 넘어가게 막음)
-			EXtoMEM_WBreg       <= 2'b00;
+			EXtoMEM_WBreg       <= 3'b000;
 			EXtoMEM_MEMreg      <= 3'b000;
 			EXtoMEM_ADDresult   <= 0;
 			EXtoMEM_zero        <= 0;
 			EXtoMEM_ALUresult   <= 0;
 			EXtoMEM_wrdata      <= 0;
 			EXtoMEM_destination <= 0;
+			EXtoMEM_PCplus4 	<= 0;
 
 			// MEM/WB는 정상 진행 (현재 MEM에 있는 분기 명령어가 무사히 빠져나가야 하므로)
 			MEMtoWB_WBreg       <= EXtoMEM_WBwire;
 			MEMtoWB_memorydata  <= mem_read_data;
 			MEMtoWB_ALUresult   <= EXtoMEM_ALUresultWire;
 			MEMtoWB_destination <= EXtoMEM_destinationWire;
+			MEMtoWB_PCplus4 	<= EXtoMEM_PCplus4wire;
 		end
 
 		else if (stallTime) begin
-    // =========================
-    // Freeze IF stage
-    // =========================
-    PC <= PC;
+			// =========================
+			// Freeze IF stage
+			// =========================
+			PC <= PC;
 
-    // =========================
-    // Freeze IF/ID pipeline reg
-    // =========================
-    IR <= IR;
-    IFtoID_nextPC <= IFtoID_nextPC;
+			// =========================
+			// Freeze IF/ID pipeline reg
+			// =========================
+			IR <= IR;
+			IFtoID_nextPC <= IFtoID_nextPC;
 
-    // =========================
-    // Insert bubble into ID/EX
-    // =========================
-    IDtoEX_WBreg <= 2'b00;
-    IDtoEX_MEMreg <= 3'b000;
-    IDtoEX_EXreg <= 6'b000000;
+			// =========================
+			// Insert bubble into ID/EX
+			// =========================
+			IDtoEX_WBreg <= 3'b00;
+			IDtoEX_MEMreg <= 3'b000;
+			IDtoEX_EXreg <= 6'b000000;
 
-    IDtoEX_ext <= 32'b0;
-    IDtoEX_nextPC <= 32'b0;
-    IDtoEX_rd_data1 <= 32'b0;
-    IDtoEX_rd_data2 <= 32'b0;
+			IDtoEX_ext <= 32'b0;
+			IDtoEX_nextPC <= 32'b0;
+			IDtoEX_rd_data1 <= 32'b0;
+			IDtoEX_rd_data2 <= 32'b0;
 
-    IDtoEX_rt <= 5'b0;
-    IDtoEX_rd <= 5'b0;
+			IDtoEX_rt <= 5'b0;
+			IDtoEX_rd <= 5'b0;
+			IDtoEX_shamt <= 0;
 
-    // =========================
-    // EX stage continues
-    // =========================
-    EXtoMEM_WBreg <= IDtoEX_WBwire;
-    EXtoMEM_MEMreg <= IDtoEX_MEMwire;
+			// =========================
+			// EX stage continues
+			// =========================
+			EXtoMEM_WBreg <= IDtoEX_WBwire;
+			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
 
-    EXtoMEM_ADDresult <= addResultWire;
-    EXtoMEM_zero <= zero;
-    EXtoMEM_ALUresult <= alu_result;
+			EXtoMEM_ADDresult <= addResultWire;
+			EXtoMEM_zero <= zero;
+			EXtoMEM_ALUresult <= alu_result;
 
-    EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
 
-    EXtoMEM_destination <= IDtoEX_destinationWire;
+			EXtoMEM_destination <= IDtoEX_destinationWire;
+			EXtoMEM_PCplus4 <= IDtoEX_nextPCwire;
+			// =========================
+			// MEM stage continues
+			// =========================
+			MEMtoWB_WBreg <= EXtoMEM_WBwire;
 
-    // =========================
-    // MEM stage continues
-    // =========================
-    MEMtoWB_WBreg <= EXtoMEM_WBwire;
+			MEMtoWB_memorydata <= mem_read_data;
+			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
 
-    MEMtoWB_memorydata <= mem_read_data;
-    MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
-
-    MEMtoWB_destination <= EXtoMEM_destinationWire;
-end
+			MEMtoWB_destination <= EXtoMEM_destinationWire;
+			MEMtoWB_PCplus4 <= EXtoMEM_PCplus4wire;
+		end
 
 		else if (Jump)	begin 
 			PC <= {IFtoID_nextPCwire[31:28], immj, 2'b00};
-			IR <= 0;
-		end
-		else if (JR)	begin 
-			PC <= IDtoEX_rd_data1Wire;
-			IR <= 0;
-		end
-		else begin
-			PC <= PC_plus4;
+			IR <= 32'hFC00_0000;
 
-			if (RegDst) EXtoMEM_destination <= IDtoEX_rdWire;
-			else 		EXtoMEM_destination <= IDtoEX_rtWire;
-
-			IR <= inst;
 			IFtoID_nextPC <= PC_plus4;
-
 
 			IDtoEX_WBreg <= WB;
 			IDtoEX_MEMreg <= MEM;
@@ -317,6 +313,7 @@ end
 			IDtoEX_ext <= ext_imm;
 			IDtoEX_rt <= rt;
 			IDtoEX_rd <= rd;
+			IDtoEX_shamt <= shamt;
 
 			EXtoMEM_WBreg <= IDtoEX_WBwire;
 			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
@@ -325,6 +322,76 @@ end
 			EXtoMEM_ALUresult <= alu_result;
 			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
 			EXtoMEM_PCplus4 <= IDtoEX_nextPCwire;
+			EXtoMEM_destination <= IDtoEX_destinationWire;
+
+			MEMtoWB_WBreg <= EXtoMEM_WBwire;
+			MEMtoWB_memorydata <= mem_read_data;
+			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
+			MEMtoWB_destination <= EXtoMEM_destinationWire;
+			MEMtoWB_PCplus4 <= EXtoMEM_PCplus4wire;
+
+		end
+		else if (JR)	begin 
+			PC <= rd_data1;
+			IR <= 32'hFC00_0000;
+			IFtoID_nextPC <= PC_plus4;
+
+			IDtoEX_WBreg <= WB;
+			IDtoEX_MEMreg <= MEM;
+			IDtoEX_EXreg <= EX;
+			IDtoEX_ext <= ext_imm;
+			IDtoEX_nextPC <= IFtoID_nextPCwire;
+			IDtoEX_rd_data1 <= rd_data1;
+			IDtoEX_rd_data2 <= rd_data2;
+			IDtoEX_ext <= ext_imm;
+			IDtoEX_rt <= rt;
+			IDtoEX_rd <= rd;
+			IDtoEX_shamt <= shamt;
+
+			EXtoMEM_WBreg <= IDtoEX_WBwire;
+			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
+			EXtoMEM_ADDresult <= addResultWire;
+			EXtoMEM_zero <= zero;
+			EXtoMEM_ALUresult <= alu_result;
+			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+			EXtoMEM_PCplus4 <= IDtoEX_nextPCwire;
+			EXtoMEM_destination <= IDtoEX_destinationWire;
+
+			MEMtoWB_WBreg <= EXtoMEM_WBwire;
+			MEMtoWB_memorydata <= mem_read_data;
+			MEMtoWB_ALUresult <= EXtoMEM_ALUresultWire;
+			MEMtoWB_destination <= EXtoMEM_destinationWire;
+			MEMtoWB_PCplus4 <= EXtoMEM_PCplus4wire;
+
+		end
+		else begin
+			PC <= PC_plus4;
+
+		
+			IR <= inst;
+
+			IFtoID_nextPC <= PC_plus4;
+
+			IDtoEX_WBreg <= WB;
+			IDtoEX_MEMreg <= MEM;
+			IDtoEX_EXreg <= EX;
+			IDtoEX_ext <= ext_imm;
+			IDtoEX_nextPC <= IFtoID_nextPCwire;
+			IDtoEX_rd_data1 <= rd_data1;
+			IDtoEX_rd_data2 <= rd_data2;
+			IDtoEX_ext <= ext_imm;
+			IDtoEX_rt <= rt;
+			IDtoEX_rd <= rd;
+			IDtoEX_shamt <= shamt;
+
+			EXtoMEM_WBreg <= IDtoEX_WBwire;
+			EXtoMEM_MEMreg <= IDtoEX_MEMwire;
+			EXtoMEM_ADDresult <= addResultWire;
+			EXtoMEM_zero <= zero;
+			EXtoMEM_ALUresult <= alu_result;
+			EXtoMEM_wrdata <= IDtoEX_rd_data2Wire;
+			EXtoMEM_PCplus4 <= IDtoEX_nextPCwire;
+			EXtoMEM_destination <= IDtoEX_destinationWire;
 
 			MEMtoWB_WBreg <= EXtoMEM_WBwire;
 			MEMtoWB_memorydata <= mem_read_data;
@@ -338,8 +405,6 @@ end
 
 	CTRL ctrl (
 		//input
-		.rst(rst),
-		.clk(clk),
 		.opcode(opcode),
 		.funct(funct),
 		.PCSrc(PCSrc),
@@ -386,7 +451,7 @@ end
 		//input
 		.operand1(operand1),
 		.operand2(operand2),
-		.shamt(shamt),
+		.shamt(IDtoEX_shamtWire),
 		.funct(ALUOp),
 		//output
 		.alu_result(alu_result),
@@ -406,4 +471,5 @@ end
 		//output
 		.stallTime(stallTime)
 	);
+	
 endmodule
